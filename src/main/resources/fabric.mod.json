@@ -1,19 +1,19 @@
 {
   "schemaVersion": 1,
-  "id": "gunpowder-template",
+  "id": "gvault",
   "version": "${version}",
-  "name": "Gunpowder Template",
-  "description": "Gunpowder Template Module",
+  "name": "GVault",
+  "description": "Vault server-side mod",
   "license": "MIT",
-  "icon": "assets/gunpowder/icon.png",
+  "icon": "assets/gvault/icon.png",
   "environment": "*",
   "entrypoints": {
     "gunpowder:modules": [
-      "io.github.gunpowder.GunpowderTemplateModule"
+      "com.williambl.gvault.GVaultModule"
     ]
   },
   "mixins": [
-    "mixins.template.gunpowder.json"
+    "mixins.gvault.json"
   ],
   "depends": {
     "gunpowder-base": ">=${gunpowder}",

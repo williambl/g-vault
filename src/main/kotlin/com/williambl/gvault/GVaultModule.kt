@@ -22,13 +22,13 @@
  * SOFTWARE.
  */
 
-package io.github.gunpowder
+package com.williambl.gvault
 
 import io.github.gunpowder.api.GunpowderMod
 import io.github.gunpowder.api.GunpowderModule
 
-class GunpowderTemplateModule : GunpowderModule {
-    override val name = "template"
+class GVaultModule : GunpowderModule {
+    override val name = "gvault"
     override val toggleable = true
     val gunpowder: GunpowderMod
         get() = GunpowderMod.instance

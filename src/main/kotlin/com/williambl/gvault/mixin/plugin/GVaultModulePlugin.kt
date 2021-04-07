@@ -22,13 +22,13 @@
  * SOFTWARE.
  */
 
-package io.github.gunpowder.mixin.plugin
+package com.williambl.gvault.mixin.plugin
 
 import org.objectweb.asm.tree.ClassNode
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo
 
-class TemplateModulePlugin : IMixinConfigPlugin {
+class GVaultModulePlugin : IMixinConfigPlugin {
     override fun onLoad(mixinPackage: String) {}
     override fun getRefMapperConfig(): String? { return null }
     override fun shouldApplyMixin(targetClassName: String, mixinClassName: String): Boolean {
