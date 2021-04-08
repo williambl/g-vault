@@ -24,10 +24,12 @@
 
 package com.williambl.gvault
 
+import com.google.inject.Inject
 import com.mojang.brigadier.arguments.IntegerArgumentType.getInteger
 import com.mojang.brigadier.arguments.IntegerArgumentType.integer
 import com.mojang.brigadier.builder.LiteralArgumentBuilder.literal
 import com.mojang.brigadier.builder.RequiredArgumentBuilder.argument
+import com.williambl.gvault.configs.GVaultConfig
 import io.github.gunpowder.api.GunpowderMod
 import io.github.gunpowder.api.GunpowderModule
 import io.github.gunpowder.api.builders.Command
@@ -49,7 +51,7 @@ class GVaultModule : GunpowderModule {
             command("vault") {
                 requires(Permissions.require("gvault.vault", 2)::test)
 
-                argument("vaultNumber", integer(1, 128)) {
+                argument("vaultNumber", integer(1, config.vaultCount)) {
                     executes { ctx ->
                         val vaultNumber = getInteger(ctx, "vaultNumber")
                         ctx.source.player.openHandledScreen(SimpleNamedScreenHandlerFactory(
@@ -62,5 +64,10 @@ class GVaultModule : GunpowderModule {
             }
 
         }
+    }
+
+    override fun registerConfigs() {
+        super.registerConfigs()
+        gunpowder.registry.registerConfig("gvault.yml", GVaultConfig::class.java, GVaultConfig())
     }
 }

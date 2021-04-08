@@ -1,5 +1,7 @@
 package com.williambl.gvault
 
+import com.williambl.gvault.configs.GVaultConfig
+import io.github.gunpowder.api.GunpowderMod
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.inventory.Inventory
 import net.minecraft.inventory.SimpleInventory
@@ -8,7 +10,7 @@ import net.minecraft.nbt.CompoundTag
 import net.minecraft.nbt.ListTag
 import net.minecraft.nbt.Tag
 
-fun createVaultInventoryList(): List<Inventory> = List(128) { SimpleInventory(27) }
+fun createVaultInventoryList(): List<Inventory> = List(config.vaultCount) { SimpleInventory(27) }
 
 fun Inventory.toTag(): Tag {
     return ListTag().also { tag ->
@@ -29,3 +31,6 @@ fun Inventory.fromTag(tag: ListTag) = tag.filterIsInstance<CompoundTag>().forEac
 }
 
 fun PlayerEntity.getVault(index: Int): Inventory = (this as VaultOwner).getVault(index)
+
+val config: GVaultConfig
+    get() = GunpowderMod.instance.registry.getConfig(GVaultConfig::class.java)
