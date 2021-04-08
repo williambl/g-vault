@@ -29,12 +29,16 @@ import com.mojang.brigadier.arguments.IntegerArgumentType.getInteger
 import com.mojang.brigadier.arguments.IntegerArgumentType.integer
 import com.mojang.brigadier.builder.LiteralArgumentBuilder.literal
 import com.mojang.brigadier.builder.RequiredArgumentBuilder.argument
+import com.mojang.brigadier.context.CommandContext
 import com.williambl.gvault.configs.GVaultConfig
 import io.github.gunpowder.api.GunpowderMod
 import io.github.gunpowder.api.GunpowderModule
 import io.github.gunpowder.api.builders.Command
 import me.lucko.fabric.api.permissions.v0.Permissions
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback
+import net.minecraft.command.argument.EntityArgumentType.getPlayer
+import net.minecraft.command.argument.EntityArgumentType.player
+import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.screen.GenericContainerScreenHandler
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory
 import net.minecraft.server.command.ServerCommandSource
@@ -43,26 +47,57 @@ import net.minecraft.text.LiteralText
 class GVaultModule : GunpowderModule {
     override val name = "gvault"
     override val toggleable = true
-    val gunpowder: GunpowderMod
+    private val gunpowder: GunpowderMod
         get() = GunpowderMod.instance
+
+    private fun openVault(vaultOwner: PlayerEntity, vaultSeer: PlayerEntity, vaultNumber: Int): Int {
+        vaultSeer.openHandledScreen(
+            SimpleNamedScreenHandlerFactory(
+                { syncId, playerInv, _ ->
+                    GenericContainerScreenHandler.createGeneric9x3(
+                        syncId,
+                        playerInv,
+                        vaultOwner.getVault(vaultNumber - 1)
+                    )
+                },
+                LiteralText("Vault $vaultNumber")
+            )
+        )
+        return 1
+    }
 
     override fun registerCommands() = gunpowder.registry.registerCommand { dispatcher ->
         Command.builder(dispatcher) {
             command("vault") {
-                requires(Permissions.require("gvault.vault", 2)::test)
+                requires(Permissions.require("gvault.viewVault", 2)::test)
 
                 argument("vaultNumber", integer(1, config.vaultCount)) {
-                    executes { ctx ->
-                        val vaultNumber = getInteger(ctx, "vaultNumber")
-                        ctx.source.player.openHandledScreen(SimpleNamedScreenHandlerFactory(
-                            { syncId, playerInv, _ -> GenericContainerScreenHandler.createGeneric9x3(syncId, playerInv, ctx.source.player.getVault(vaultNumber-1)) },
-                            LiteralText("Vault $vaultNumber")
-                        ))
-                        1
+                    executes { ctx -> openVault(ctx.source.player, ctx.source.player, getInteger(ctx, "vaultNumber")) }
+                }
+
+                literal("showto") {
+                    requires(Permissions.require("gvault.showToOther", 3)::test)
+
+                    argument("vaultOwner", player()) {
+                        argument("vaultNumber", integer(1, config.vaultCount)) {
+                            executes { ctx ->
+                                val player = getPlayer(ctx, "vaultOwner")
+                                openVault(player, player, getInteger(ctx, "vaultNumber"))
+                            }
+                        }
+                    }
+                }
+
+                literal("spy") {
+                    requires(Permissions.require("gvault.spy", 4)::test)
+
+                    argument("vaultOwner", player()) {
+                        argument("vaultNumber", integer(1, config.vaultCount)) {
+                            executes { ctx -> openVault(getPlayer(ctx, "vaultOwner"), ctx.source.player, getInteger(ctx, "vaultNumber"))}
+                        }
                     }
                 }
             }
-
         }
     }
 
