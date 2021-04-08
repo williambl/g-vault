@@ -3,7 +3,7 @@
   "id": "gvault",
   "version": "${version}",
   "name": "GVault",
-  "description": "Vault server-side mod",
+  "description": "Server-side mod adding vaults",
   "license": "MIT",
   "icon": "assets/gvault/icon.png",
   "environment": "*",

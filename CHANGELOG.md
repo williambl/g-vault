@@ -1,5 +1,5 @@
-# GunpowderTemplate 1.0
+# GVault 1.0.0
 
-- No changes
+- Initial Release
 
 ---
