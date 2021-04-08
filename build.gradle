@@ -17,6 +17,10 @@ plugins {
     id 'io.github.gunpowder' version '0.2.0'
 }
 
+repositories {
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+}
+
 dependencies {
     // Needed here too
     constraints {
@@ -27,4 +31,6 @@ dependencies {
             }
         }
     }
+
+    modImplementation include("me.lucko:fabric-permissions-api:0.1-SNAPSHOT")
 }

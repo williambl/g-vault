@@ -30,6 +30,8 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder.literal
 import com.mojang.brigadier.builder.RequiredArgumentBuilder.argument
 import io.github.gunpowder.api.GunpowderMod
 import io.github.gunpowder.api.GunpowderModule
+import io.github.gunpowder.api.builders.Command
+import me.lucko.fabric.api.permissions.v0.Permissions
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback
 import net.minecraft.screen.GenericContainerScreenHandler
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory
@@ -42,18 +44,23 @@ class GVaultModule : GunpowderModule {
     val gunpowder: GunpowderMod
         get() = GunpowderMod.instance
 
-    override fun onInitialize() {
-        CommandRegistrationCallback.EVENT.register { dispatcher, isDedicated ->
-            dispatcher.register(literal<ServerCommandSource>("vault").then(
-                    argument<ServerCommandSource, Int>("vaultNumber", integer(1, 128)).executes { ctx ->
+    override fun registerCommands() = gunpowder.registry.registerCommand { dispatcher ->
+        Command.builder(dispatcher) {
+            command("vault") {
+                requires(Permissions.require("gvault.vault", 2)::test)
+
+                argument("vaultNumber", integer(1, 128)) {
+                    executes { ctx ->
                         val vaultNumber = getInteger(ctx, "vaultNumber")
                         ctx.source.player.openHandledScreen(SimpleNamedScreenHandlerFactory(
-                                { syncId, playerInv, _ -> GenericContainerScreenHandler.createGeneric9x3(syncId, playerInv, ctx.source.player.getVault(vaultNumber-1)) },
-                                LiteralText("Vault $vaultNumber")
+                            { syncId, playerInv, _ -> GenericContainerScreenHandler.createGeneric9x3(syncId, playerInv, ctx.source.player.getVault(vaultNumber-1)) },
+                            LiteralText("Vault $vaultNumber")
                         ))
                         1
                     }
-            ))
+                }
+            }
+
         }
     }
 }
