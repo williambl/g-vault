@@ -47,7 +47,7 @@ class GVaultModule : GunpowderModule {
 
     private fun openVault(vaultOwner: PlayerEntity, vaultSeer: PlayerEntity, vaultNumber: Int, error: (Text) -> Unit): Int {
         if (vaultNumber > vaultOwner.vaultCount) {
-            error(Text.of("$vaultNumber is too high! Max ${vaultOwner.vaultCount}"))
+            error(LiteralText("$vaultNumber is too high! Max ${vaultOwner.vaultCount}"))
             return 0
         }
         vaultSeer.openHandledScreen(
