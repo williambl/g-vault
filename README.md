@@ -13,6 +13,18 @@ A Gunpowder add-on which adds *vaults*, per-player end-chest-style inventories w
 ## Config
 
 ```yaml
-vaultCount: 128 # How many vaults does each player have access to?
-isDoubleChest: yes # Are vaults double-size?
+vaultCount: 3 # How many vaults does each player have access to?
+isDoubleChest: no # Are vaults double-size?
+configGroups: [] # A list of Config Groups
 ```
+
+## Config Groups
+
+A config group looks like:
+```yaml
+name: special
+vaultCount: 5
+doubleChest: yes
+```
+
+Then, if a player has the `gvault.group.special`, they will have 5 double-size vaults.
