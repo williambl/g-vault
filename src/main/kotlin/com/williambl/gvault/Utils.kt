@@ -10,7 +10,7 @@ import net.minecraft.nbt.CompoundTag
 import net.minecraft.nbt.ListTag
 import net.minecraft.nbt.Tag
 
-fun createVaultInventoryList(): List<Inventory> = List(config.vaultCount) { SimpleInventory(27) }
+fun createVaultInventoryList(): List<Inventory> = List(config.vaultCount) { SimpleInventory(if (config.isDoubleChest) 54 else 27) }
 
 fun Inventory.toTag(): Tag {
     return ListTag().also { tag ->
@@ -26,9 +26,12 @@ fun Inventory.toTag(): Tag {
     }
 }
 
-fun Inventory.fromTag(tag: ListTag) = tag.filterIsInstance<CompoundTag>().forEach {
-    this.setStack(it.getByte("Slot").toInt(), ItemStack.fromTag(it))
-}
+fun Inventory.fromTag(tag: ListTag) = tag.asSequence()
+    .filterIsInstance<CompoundTag>()
+    .filter { it.getByte("Slot") < this.size() }
+    .forEach {
+        this.setStack(it.getByte("Slot").toInt(), ItemStack.fromTag(it))
+    }
 
 fun PlayerEntity.getVault(index: Int): Inventory = (this as VaultOwner).getVault(index)
 

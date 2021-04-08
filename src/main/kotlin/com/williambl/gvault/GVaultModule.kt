@@ -54,11 +54,18 @@ class GVaultModule : GunpowderModule {
         vaultSeer.openHandledScreen(
             SimpleNamedScreenHandlerFactory(
                 { syncId, playerInv, _ ->
-                    GenericContainerScreenHandler.createGeneric9x3(
-                        syncId,
-                        playerInv,
-                        vaultOwner.getVault(vaultNumber - 1)
-                    )
+                    if (config.isDoubleChest)
+                        GenericContainerScreenHandler.createGeneric9x6(
+                            syncId,
+                            playerInv,
+                            vaultOwner.getVault(vaultNumber - 1)
+                        )
+                    else
+                        GenericContainerScreenHandler.createGeneric9x3(
+                            syncId,
+                            playerInv,
+                            vaultOwner.getVault(vaultNumber - 1)
+                        )
                 },
                 LiteralText("Vault $vaultNumber")
             )
