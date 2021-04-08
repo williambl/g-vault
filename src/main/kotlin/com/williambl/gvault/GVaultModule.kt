@@ -24,25 +24,20 @@
 
 package com.williambl.gvault
 
-import com.google.inject.Inject
 import com.mojang.brigadier.arguments.IntegerArgumentType.getInteger
 import com.mojang.brigadier.arguments.IntegerArgumentType.integer
-import com.mojang.brigadier.builder.LiteralArgumentBuilder.literal
-import com.mojang.brigadier.builder.RequiredArgumentBuilder.argument
-import com.mojang.brigadier.context.CommandContext
 import com.williambl.gvault.configs.GVaultConfig
 import io.github.gunpowder.api.GunpowderMod
 import io.github.gunpowder.api.GunpowderModule
 import io.github.gunpowder.api.builders.Command
 import me.lucko.fabric.api.permissions.v0.Permissions
-import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback
 import net.minecraft.command.argument.EntityArgumentType.getPlayer
 import net.minecraft.command.argument.EntityArgumentType.player
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.screen.GenericContainerScreenHandler
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory
-import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.text.LiteralText
+import net.minecraft.text.Text
 
 class GVaultModule : GunpowderModule {
     override val name = "gvault"
@@ -50,11 +45,15 @@ class GVaultModule : GunpowderModule {
     private val gunpowder: GunpowderMod
         get() = GunpowderMod.instance
 
-    private fun openVault(vaultOwner: PlayerEntity, vaultSeer: PlayerEntity, vaultNumber: Int): Int {
+    private fun openVault(vaultOwner: PlayerEntity, vaultSeer: PlayerEntity, vaultNumber: Int, error: (Text) -> Unit): Int {
+        if (vaultNumber > vaultOwner.vaultCount) {
+            error(Text.of("$vaultNumber is too high! Max ${vaultOwner.vaultCount}"))
+            return 0
+        }
         vaultSeer.openHandledScreen(
             SimpleNamedScreenHandlerFactory(
                 { syncId, playerInv, _ ->
-                    if (config.isDoubleChest)
+                    if (vaultOwner.isVaultDoubleChest)
                         GenericContainerScreenHandler.createGeneric9x6(
                             syncId,
                             playerInv,
@@ -76,20 +75,20 @@ class GVaultModule : GunpowderModule {
     override fun registerCommands() = gunpowder.registry.registerCommand { dispatcher ->
         Command.builder(dispatcher) {
             command("vault") {
-                requires(Permissions.require("gvault.viewVault", 2)::test)
+                requires(Permissions.require("gvault.view_vault", 2)::test)
 
-                argument("vaultNumber", integer(1, config.vaultCount)) {
-                    executes { ctx -> openVault(ctx.source.player, ctx.source.player, getInteger(ctx, "vaultNumber")) }
+                argument("vaultNumber", integer(1)) {
+                    executes { ctx -> openVault(ctx.source.player, ctx.source.player, getInteger(ctx, "vaultNumber"), ctx.source::sendError) }
                 }
 
                 literal("showto") {
-                    requires(Permissions.require("gvault.showToOther", 3)::test)
+                    requires(Permissions.require("gvault.show_to_other", 3)::test)
 
                     argument("vaultOwner", player()) {
-                        argument("vaultNumber", integer(1, config.vaultCount)) {
+                        argument("vaultNumber", integer(1)) {
                             executes { ctx ->
                                 val player = getPlayer(ctx, "vaultOwner")
-                                openVault(player, player, getInteger(ctx, "vaultNumber"))
+                                openVault(player, player, getInteger(ctx, "vaultNumber"), ctx.source::sendError)
                             }
                         }
                     }
@@ -99,8 +98,13 @@ class GVaultModule : GunpowderModule {
                     requires(Permissions.require("gvault.spy", 4)::test)
 
                     argument("vaultOwner", player()) {
-                        argument("vaultNumber", integer(1, config.vaultCount)) {
-                            executes { ctx -> openVault(getPlayer(ctx, "vaultOwner"), ctx.source.player, getInteger(ctx, "vaultNumber"))}
+                        argument("vaultNumber", integer(1)) {
+                            executes { ctx -> openVault(
+                                getPlayer(ctx, "vaultOwner"),
+                                ctx.source.player,
+                                getInteger(ctx, "vaultNumber"),
+                                ctx.source::sendError
+                            )}
                         }
                     }
                 }
@@ -109,7 +113,6 @@ class GVaultModule : GunpowderModule {
     }
 
     override fun registerConfigs() {
-        super.registerConfigs()
         gunpowder.registry.registerConfig("gvault.yml", GVaultConfig::class.java, GVaultConfig())
     }
 }

@@ -18,21 +18,27 @@ import java.util.List;
 @Mixin(PlayerEntity.class)
 public class PlayerEntityMixin implements VaultOwner {
     @Unique
-    List<Inventory> vaultInventories = UtilsKt.createVaultInventoryList();
+    private List<Inventory> vaultInventories = null;
+    @Unique
+    private List<Inventory> getVaultInventories() {
+        if (vaultInventories == null)
+            vaultInventories = UtilsKt.createVaultInventoryList((PlayerEntity) (Object) this);
+        return vaultInventories;
+    }
 
     @Inject(method = "readCustomDataFromTag", at=@At("TAIL"))
     void gVault$readVaultDataFromTag(CompoundTag tag, CallbackInfo ci) {
         ListTag vaultTag = tag.getList("GVaults", 9);
-        for (int i = 0; i < vaultInventories.size(); i++) {
-            UtilsKt.fromTag(vaultInventories.get(i), vaultTag.getList(i));
+        for (int i = 0; i < getVaultInventories().size(); i++) {
+            UtilsKt.fromTag(getVaultInventories().get(i), vaultTag.getList(i));
         }
     }
 
     @Inject(method = "writeCustomDataToTag", at=@At("TAIL"))
     void gVault$writeVaultDataToTag(CompoundTag tag, CallbackInfo ci) {
         ListTag vaultTag = new ListTag();
-        for (int i = 0; i < vaultInventories.size(); i++) {
-            vaultTag.add(i, UtilsKt.toTag(vaultInventories.get(i)));
+        for (int i = 0; i < getVaultInventories().size(); i++) {
+            vaultTag.add(i, UtilsKt.toTag(getVaultInventories().get(i)));
         }
         tag.put("GVaults", vaultTag);
     }
@@ -40,6 +46,10 @@ public class PlayerEntityMixin implements VaultOwner {
     @NotNull
     @Override
     public Inventory getVault(int index) {
-        return vaultInventories.get(index);
+        List<Inventory> inventories = getVaultInventories();
+        if (index >= inventories.size()) {
+            vaultInventories = UtilsKt.enlargeVaultInventoryList((PlayerEntity) (Object) this, inventories);
+        }
+        return getVaultInventories().get(index);
     }
 }
