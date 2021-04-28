@@ -28,4 +28,5 @@ import net.minecraft.inventory.Inventory
 
 interface VaultOwner {
     fun getVault(index: Int): Inventory
+    fun getVaults(): List<Inventory>
 }

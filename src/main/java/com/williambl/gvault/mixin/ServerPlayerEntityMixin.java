@@ -30,6 +30,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -39,8 +40,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
 
-@Mixin(PlayerEntity.class)
-public class PlayerEntityMixin implements VaultOwner {
+@Mixin(ServerPlayerEntity.class)
+public class ServerPlayerEntityMixin implements VaultOwner {
     @Unique
     private List<Inventory> vaultInventories = null;
     @Unique
@@ -67,6 +68,11 @@ public class PlayerEntityMixin implements VaultOwner {
         tag.put("GVaults", vaultTag);
     }
 
+    @Inject(method = "copyFrom", at=@At("TAIL"))
+    void gVault$copyFrom(ServerPlayerEntity oldPlayer, boolean alive, CallbackInfo ci) {
+        vaultInventories = ((VaultOwner)oldPlayer).getVaults();
+    }
+
     @NotNull
     @Override
     public Inventory getVault(int index) {
@@ -75,5 +81,11 @@ public class PlayerEntityMixin implements VaultOwner {
             vaultInventories = UtilsKt.enlargeVaultInventoryList((PlayerEntity) (Object) this, inventories);
         }
         return getVaultInventories().get(index);
+    }
+
+    @NotNull
+    @Override
+    public List<Inventory> getVaults() {
+        return getVaultInventories();
     }
 }

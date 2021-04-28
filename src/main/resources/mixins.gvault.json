@@ -4,7 +4,7 @@
   "compatibilityLevel": "JAVA_8",
   "plugin": "com.williambl.gvault.mixin.plugin.GVaultModulePlugin",
   "mixins": [
-    "PlayerEntityMixin"
+    "ServerPlayerEntityMixin"
   ],
   "injectors": {
     "defaultRequire": 1
